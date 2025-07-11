@@ -16,7 +16,7 @@ class DummyClient(object):
         )
         self.frequency = frequency
         
-        self.example_observation = {
+        self.dummy_observation = {
             'rgb': np.zeros((480, 640, 3), dtype=np.uint8),
             'state': np.zeros(7, dtype=np.float32),
         }
@@ -27,5 +27,5 @@ class DummyClient(object):
             time.sleep(1 / self.frequency)
     
     def do_action(self):
-        action = self.policy.infer(self.example_observation)['action']
+        action = self.policy.infer(self.dummy_observation)['action']
         print(action)

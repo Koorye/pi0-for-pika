@@ -16,10 +16,37 @@ def main(args):
     
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Deploy the OpenPI client.')
-    parser.add_argument('--host', type=str, default='127.0.0.1', help='Host address of the server.')
-    parser.add_argument('--port', type=int, default=8000, help='Port number of the server.')
-    parser.add_argument('--frequency', type=int, default=10, help='Frequency of actions in Hz.')
-    parser.add_argument('--can', type=str, default='can0', help='CAN interface to use.')
+    parser.add_argument(
+        '--host', 
+        type=str, 
+        default='127.0.0.1', 
+        help='Host address of the server.'
+    )
+    parser.add_argument(
+        '--port', 
+        type=int, 
+        default=8000, 
+        help='Port number of the server.'
+    )
+    parser.add_argument(
+        '--frequency', 
+        type=int, 
+        default=10, 
+        help='Frequency of actions in Hz.'
+    )
+    parser.add_argument(
+        '--can', 
+        type=str, 
+        default='can0',
+        help='CAN interface to use.'
+    )
+    parser.add_argument(
+        '--control-mode', 
+        type=str, 
+        default='eef_absolute', 
+        choices=['eef_absolute', 'eef_delta', 'eef_delta_gripper'], 
+        help='Control mode for the Piper.'
+    )
     args = parser.parse_args()
     main(args)
     

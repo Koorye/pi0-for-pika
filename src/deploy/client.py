@@ -14,4 +14,4 @@ class Client(DummyClient):
     def do_action(self):
         obs = self.piper.get_observation()
         action = self.policy.infer(obs)['action']
-        self.piper.set_eef_action(action)
+        self.piper.do_action(action)

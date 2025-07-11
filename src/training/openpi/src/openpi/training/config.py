@@ -407,7 +407,8 @@ class LeRobotPikaDataConfig(DataConfigFactory):
         delta_action_mask = _transforms.make_bool_mask(6, -1, 6, -1)
         data_transforms = data_transforms.push(
             inputs=[_transforms.DeltaActions(delta_action_mask)],
-            outputs=[_transforms.AbsoluteActions(delta_action_mask)],
+            # outputs=[_transforms.AbsoluteActions(delta_action_mask)],
+            outputs=[], # for outputs, the actions will be converted to absolute actions in the client
         )
 
         model_transforms = ModelTransformFactory()(model_config)
@@ -784,6 +785,12 @@ _CONFIGS = [
             paligemma_variant="gemma_2b_lora", action_expert_variant="gemma_300m_lora"
         ).get_freeze_filter(),
         ema_decay=None,
+    ),
+    TrainConfig(
+        name="pi0_pika",
+        model=pi0.Pi0Config(),
+        weight_loader=weight_loaders.CheckpointWeightLoader("gs://openpi-assets/checkpoints/pi0_base/params"),
+        num_train_steps=30_000,
     ),
 ]
 

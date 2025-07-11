@@ -100,4 +100,3 @@ def _health_check(connection: _server.ServerConnection, request: _server.Request
         return connection.respond(http.HTTPStatus.OK, "OK\n")
     # Continue with the normal request handling.
     return None
-

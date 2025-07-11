@@ -5,6 +5,7 @@ A pipeline for Data Processing, Model Training, and Real-world Deployment for Pi
 ## Installation
 
 ```bash
+cd scripts/installation
 conda create -n pi0-for-pika python=3.11
 conda activate pi0-for-pika
 bash install.sh
@@ -25,6 +26,15 @@ python scripts/data/pika2lerobot.py
 
 ### Model Training
 
+The pika config has been added to `src/training/openpi/src/openpi/training/config.py`, available configs include:
+
+- `pi0_pika_lora`: fine-tuning with LoRA
+- `pi0_pika`: full fine-tuning
+
+Currently, all configs use fisheye camera as input, batch size is set to 32, training steps is set to 30000.
+
+⚠️ You need one GPU with at least 24GB memory to run the training.
+
 1. Compute the dataset statistics:
 ```bash
 python scripts/training/compute_norm_stats.py --config-name your_config
@@ -34,6 +44,13 @@ python scripts/training/compute_norm_stats.py --config-name your_config
 ```bash
 XLA_PYTHON_CLIENT_MEM_FRACTION=0.9 python scripts/training/train.py your_config --exp-name=your_experiment --overwrite
 ```
+
+(Optional) If you want to add your own training config, please follow the format in:
+
+- `src/training/openpi/src/openpi/training/config.py`
+- `src/training/openpi/src/openpi/policies`
+
+and add your config to the `_CONFIGS` list.
 
 ### Real-world Deployment
 
@@ -45,10 +62,45 @@ python scripts/deploy/run_server.py \
     --port 8000
 ```
 
-2. Run the client to interact with the model server:
+2. Connect usb to your robot arm and check all cans are available:
+```bash
+bash scripts/deploy/find_all_can_port.sh
+```
+The result will be similar to:
+```bash
+Both ethtool and can-utils are installed.
+Interface can0 is connected to USB port 3-1.4:1.0
+Interface can1 is connected to USB port 3-1.1:1.0 # for multi-arm setup, if you have two arms connected
+```
+
+3. Edit `scripts/deploy/can_muti_activate.sh` to update the USB_PORTS variable with the ports found in the previous step. For example:
+```bash
+USB_PORTS["3-1.4:1.0"]="can_left:1000000"
+USB_PORTS["3-1.1:1.0"]="can_right:1000000" # for multi-arm setup, if you have two arms connected
+```
+Then run the script to activate the CAN interfaces:
+```bash
+bash scripts/deploy/can_activate.sh can_piper 1000000 "3-1.4:1.0" # for single-arm setup
+bash scripts/deploy/can_muti_activate.sh # for multi-arm setup
+```
+
+4. Run `ifconfig` to check if all can interfaces are available.
+
+5. Run the client to interact with the model server:
+
+(single-arm)
 ```bash
 python scripts/deploy/run_client.py \
     --host 127.0.0.1 \
     --port 8000 \
     --can your_can_name
+```
+
+(multi-arm)
+```bash
+python scripts/deploy/run_multi_arm_client.py \
+    --host 127.0.0.1 \
+    --port 8000 \
+    --left-can your_can_name_left \
+    --right-cam your_can_name_right
 ```
