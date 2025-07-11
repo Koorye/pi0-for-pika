@@ -5,7 +5,8 @@ A pipeline for Data Processing, Model Training, and Real-world Deployment for Pi
 ## Installation
 
 ```bash
-cd scripts/installation
+git clone https://github.com/Koorye/pi0-for-pika.git
+cd pi0-for-pika/scripts/installation
 conda create -n pi0-for-pika python=3.11
 conda activate pi0-for-pika
 bash install.sh
