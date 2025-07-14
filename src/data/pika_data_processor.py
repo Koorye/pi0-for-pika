@@ -43,15 +43,33 @@ class PikaDataProcessor(DummyDataProcessor):
         if instruction == 'null':
             instruction = self.config.default_instruction
         
+        outputs = {
+            'raw_images': raw_images,
+            'raw_actions': raw_actions,
+            'instruction': instruction
+        }
+
+        if self.config.use_depth:
+            raw_depths = defaultdict(list)
+            for depth_dir, depth_name in zip(self.config.depth_dirs, self.config.depth_names):
+                depth_dir = os.path.join(episode_path, depth_dir)
+                for file_name in sorted(os.listdir(depth_dir), key=lambda x: float(x[:-5])):
+                    depth_path = os.path.join(depth_dir, file_name)
+                    raw_depths[depth_name].append(depth_path)
+            outputs['raw_depths'] = raw_depths
+        
         lens = []
         for rgb_name, images_list in raw_images.items():
             lens.append(len(images_list))
         for action_dir, actions_list in raw_actions.items():
             lens.append(len(actions_list))
+        if self.config.use_depth:
+            for depth_name, depth_list in raw_images.items():
+                lens.append(len(depth_list))
         
         assert all(lens[0] == l for l in lens), "All lists must have the same length"
         
-        return raw_images, raw_actions, instruction
+        return outputs
     
     def _check_nonoop_actions(self, states, actions):
         return np.abs(states - actions).max() > self.config.nonoop_threshold

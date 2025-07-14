@@ -393,7 +393,7 @@ class LeRobotPikaDataConfig(DataConfigFactory):
                         "right_wrist_fisheye_rgb": "right_wrist_fisheye_rgb",
                         "states": "states",
                         "actions": "actions",
-                        "task": "task",
+                        "prompt": "prompt",
                     }
                 )
             ]
@@ -789,6 +789,9 @@ _CONFIGS = [
     TrainConfig(
         name="pi0_pika",
         model=pi0.Pi0Config(),
+        data=LeRobotPikaDataConfig(
+            repo_id="Koorye/pika",
+        ),
         weight_loader=weight_loaders.CheckpointWeightLoader("gs://openpi-assets/checkpoints/pi0_base/params"),
         num_train_steps=30_000,
     ),

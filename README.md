@@ -12,6 +12,16 @@ conda activate pi0-for-pika
 bash install.sh
 ```
 
+After that, test GPUs by running: 
+```bash
+python scripts/installation/check_gpu_available.py
+```
+
+If all GPUs are available, this script will return:
+```
+GPU is available for PyTorch, TensorFlow, and JAX.
+```
+
 ## Usage
 
 ### Data Processing
@@ -32,7 +42,15 @@ The pika config has been added to `src/training/openpi/src/openpi/training/confi
 - `pi0_pika_lora`: fine-tuning with LoRA
 - `pi0_pika`: full fine-tuning
 
-Currently, all configs use fisheye camera as input, batch size is set to 32, training steps is set to 30000.
+Training hyperparameters:
+| Hyperparameter | Value |
+|----------------|-------|
+| Batch Size     | 32    |
+| Training Steps | 30000 |
+
+⚠️ State token is replaced by a zero vector in the model, which is different from the original Pi-0 paper. 
+This is due to the fact that the state token is not available in the Pika dataset. 
+See the modification in line 217 of `src/training/openpi/src/openpi/models/pi0.py`.
 
 ⚠️ You need one GPU with at least 24GB memory to run the training.
 

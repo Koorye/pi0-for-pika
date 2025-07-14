@@ -6,8 +6,8 @@ class DataConfig:
     overwrite = True
 
     source_data_roots = [
-        '/media/shihanwu/新加卷/pika_wushihan/left',
-        '/media/shihanwu/新加卷/pika_wushihan/right',
+        '/home/shihanwu/Datasets/pika/left',
+        '/home/shihanwu/Datasets/pika/right',
     ]
 
     image_height = 480
@@ -25,6 +25,18 @@ class DataConfig:
         'left_wrist_fisheye_rgb',
         'right_wrist_base_rgb',
         'right_wrist_fisheye_rgb',
+    ]
+
+    use_depth = True
+    depth_dirs = [
+        'camera/depth/pikaDepthCamera_c',
+        'camera/depth/pikaDepthCamera_l',
+        'camera/depth/pikaDepthCamera_r',
+    ]
+    depth_names = [
+        'third_base_depth',
+        'left_wrist_base_depth',
+        'right_wrist_base_depth',
     ]
 
     action_len = 14

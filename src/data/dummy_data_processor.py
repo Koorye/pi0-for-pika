@@ -58,6 +58,15 @@ class DummyDataProcessor(object):
             'shape': (self.config.action_len,),
             'name': ['actions'],
         }
+
+        if self.config.use_depth:
+            depth_config = {
+                'dtype': 'uint16',
+                'shape': (self.config.image_height, self.config.image_width),
+                'name': ['height', 'width'],
+            }
+            for depth_name in self.config.depth_names:
+                features[depth_name] = depth_config
         
         if self.config.data_root is not None:
             self.config.data_root = os.path.join(self.config.data_root, self.config.repo_id)
@@ -77,7 +86,13 @@ class DummyDataProcessor(object):
             self._add_episode('dummy')
     
     def _add_episode(self, episode_path):
-        raw_images, raw_actions, instruction = self._load_episode(episode_path)
+        raw_outputs = self._load_episode(episode_path)
+        raw_images = raw_outputs['raw_images']
+        raw_actions = raw_outputs['raw_actions']
+        instruction = raw_outputs['instruction']
+        if self.config.use_depth:
+            raw_depths = raw_outputs['raw_depths']
+        
         indexs = list(range(len(raw_images[self.config.rgb_names[0]])))
         
         for i in tqdm(indexs[:-1], desc=f'Adding episode {episode_path}'):
@@ -89,6 +104,9 @@ class DummyDataProcessor(object):
             frame = {rgb_name: load_image(raw_images[rgb_name][i]) for rgb_name in self.config.rgb_names}
             frame['states'] = states
             frame['actions'] = actions
+            if self.config.use_depth:
+                frame.update({depth_name: load_image(raw_depths[depth_name][i]) 
+                              for depth_name in self.config.depth_names})
 
             if _LEROBOT_VERSION == '2.0':
                 self.dataset.add_frame(frame)

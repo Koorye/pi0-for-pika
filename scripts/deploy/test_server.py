@@ -7,8 +7,12 @@ from openpi_client import websocket_client_policy
 
 def main(args):
     example_observation = {
-        'rgb': np.zeros((480, 640, 3), dtype=np.uint8),
-        'state': np.zeros(7, dtype=np.float32),
+        'left_wrist_base_rgb': np.zeros((480, 640, 3), dtype=np.uint8),
+        'right_wrist_base_rgb': np.zeros((480, 640, 3), dtype=np.uint8),
+        'left_wrist_fisheye_rgb': np.zeros((480, 640, 3), dtype=np.uint8),
+        'right_wrist_fisheye_rgb': np.zeros((480, 640, 3), dtype=np.uint8),
+        'states': np.zeros(7, dtype=np.float32),
+        'prompt': 'do something',
     }
 
     policy = websocket_client_policy.WebsocketClientPolicy(

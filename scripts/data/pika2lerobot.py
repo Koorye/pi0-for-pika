@@ -4,12 +4,12 @@ sys.path.append('.')
 import argparse
 import importlib
 
-from data.pika_data_processor import DataProcessor
+from src.data.pika_data_processor import PikaDataProcessor
 
 
 def main(args):
     config = importlib.import_module('scripts.data.' + args.config).DataConfig()
-    processor = DataProcessor(config)
+    processor = PikaDataProcessor(config)
     processor.process_data()
 
 

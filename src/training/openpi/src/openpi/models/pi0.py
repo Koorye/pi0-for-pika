@@ -214,6 +214,7 @@ class Pi0(_model.BaseModel):
         tokens = []
         # add a single state token
         state_token = self.state_proj(obs.state)[:, None, :]
+        state_token = jnp.zeros_like(state_token) 
         tokens.append(state_token)
         input_mask.append(jnp.ones((obs.state.shape[0], 1), dtype=jnp.bool_))
         # image/language inputs do not attend to state or actions

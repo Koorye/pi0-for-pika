@@ -2,10 +2,11 @@ import numpy as np
 import time
 from piper_sdk import C_PiperInterface_V2
 
+from .standardlization import get_standardization
 from .utils import delta_to_absolute_root_translation, delta_to_absolute_gripper_translation
 
 
-_INIT_STATE = [57000, 0, 300000, 0, 90000, 0, 0, 60000]
+_INIT_STATES = [57000, 0, 300000, 0, 90000, 0, 0, 60000]
 
 
 class Camera(object):
@@ -20,6 +21,10 @@ class Piper(object):
     def __init__(self, can, control_mode='eef_absolute'):
         self.can = can
         self.control_mode = control_mode
+
+        transforms = get_standardization('piper')
+        self.input_transform = transforms['input']
+        self.output_transform = transforms['output']
         
         self.piper = C_PiperInterface_V2(can)
         self.piper.ConnectPort()
@@ -34,38 +39,40 @@ class Piper(object):
     
     def get_observation(self):
         # TODO: Implement camera observation
-        state = self.get_eef_state()
+        states = self.input_transform(self.get_eef_states())
         return {
-            'state': state,
+            'states': states,
         }
     
-    def do_action(self, action):
+    def do_action(self, actions):
+        actions = self.output_transform(actions)
+        
         if self.control_mode == 'eef_absolute':
-            self.set_eef_state(action)
+            self.set_eef_states(actions)
         elif self.control_mode == 'eef_delta_root':
-            state = self.get_eef_state()
-            self.set_eef_state(delta_to_absolute_root_translation(action, state))
+            states = self.get_eef_states()
+            self.set_eef_states(delta_to_absolute_root_translation(actions, states))
         elif self.control_mode == 'eef_delta_gripper':
-            state = self.get_eef_state()
-            self.set_eef_state(delta_to_absolute_gripper_translation(action, state))
+            states = self.get_eef_states()
+            self.set_eef_state(delta_to_absolute_gripper_translation(actions, states))
         else:
             raise ValueError(f"Unknown control mode: {self.control_mode}")
     
-    def get_eef_state(self):
+    def get_eef_states(self):
         end_pose = self.piper.GetArmEndPoseMsgs().end_pose
         x, y, z, rx, ry, rz = end_pose.X_axis, end_pose.Y_axis, end_pose.Z_axis, \
                               end_pose.RX_axis, end_pose.RY_axis, end_pose.RZ_axis
         grip = self.piper.GetArmGripperMsgs()
         return np.array([x, y, z, rx, ry, rz, grip])
     
-    def set_eef_state(self, state):
+    def set_eef_states(self, states):
         self.piper.MotionCtrl_2(0x01, 0x00, 100, 0x00)
-        x, y, z, rx, ry, rz, grip = state
+        x, y, z, rx, ry, rz, grip = states
         self.piper.EndPoseCtrl(x, y, z, rx, ry, rz)
         self.piper.GripperCtrl(grip, 1000, 0x01, 0)
     
     def reset(self):
-        self.set_eef_state(_INIT_STATE)
+        self.set_eef_states(_INIT_STATES)
 
 
 class MultiArmPiper(object):
