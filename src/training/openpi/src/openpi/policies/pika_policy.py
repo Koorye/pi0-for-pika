@@ -54,8 +54,9 @@ class PikaInputs(transforms.DataTransformFn):
             "image_mask": dict(zip(names, image_masks, strict=True)),
         }
 
-        actions = data["actions"]
-        inputs["actions"] = transforms.pad_to_dim(actions, self.action_dim)
+        if 'actions' in data:
+            actions = data["actions"]
+            inputs["actions"] = transforms.pad_to_dim(actions, self.action_dim)
 
         if isinstance(data["prompt"], bytes):
             data["prompt"] = data["prompt"].decode("utf-8")

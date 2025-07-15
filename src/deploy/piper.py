@@ -6,21 +6,18 @@ from .standardlization import get_standardization
 from .utils import delta_to_absolute_root_translation, delta_to_absolute_gripper_translation
 
 
-_INIT_STATES = [57000, 0, 300000, 0, 90000, 0, 0, 60000]
-
-
-class Camera(object):
-    def __init__(self, can):
-        pass
-    
-    def get_observation(self):
-        pass
+_INIT_STATES = [57000, 0, 350000, 0, 90000, 0, 60000]
+_INIT_JOINT_STATES = [4710, 15879, -31866, -10099, 32765, 10222]
 
 
 class Piper(object):
-    def __init__(self, can, control_mode='eef_absolute'):
+    def __init__(self, 
+                 can, 
+                 control_mode='eef_absolute',
+                 use_standardization=True):
         self.can = can
         self.control_mode = control_mode
+        self.use_standardization = use_standardization
 
         transforms = get_standardization('piper')
         self.input_transform = transforms['input']
@@ -30,22 +27,18 @@ class Piper(object):
         self.piper.ConnectPort()
         while not self.piper.EnablePiper():
             time.sleep(0.01)
-
-        self.reset()
-        for _ in range(100):
-            time.sleep(0.01)
-        
-        print('Piper init finished')
     
     def get_observation(self):
-        # TODO: Implement camera observation
-        states = self.input_transform(self.get_eef_states())
+        states = self.get_eef_states()
+        if self.use_standardization:
+            states = self.input_transform(states)
         return {
             'states': states,
         }
     
     def do_action(self, actions):
-        actions = self.output_transform(actions)
+        if self.use_standardization:
+            actions = self.output_transform(actions)
         
         if self.control_mode == 'eef_absolute':
             self.set_eef_states(actions)
@@ -54,7 +47,7 @@ class Piper(object):
             self.set_eef_states(delta_to_absolute_root_translation(actions, states))
         elif self.control_mode == 'eef_delta_gripper':
             states = self.get_eef_states()
-            self.set_eef_state(delta_to_absolute_gripper_translation(actions, states))
+            self.set_eef_states(delta_to_absolute_gripper_translation(actions, states))
         else:
             raise ValueError(f"Unknown control mode: {self.control_mode}")
     
@@ -62,33 +55,42 @@ class Piper(object):
         end_pose = self.piper.GetArmEndPoseMsgs().end_pose
         x, y, z, rx, ry, rz = end_pose.X_axis, end_pose.Y_axis, end_pose.Z_axis, \
                               end_pose.RX_axis, end_pose.RY_axis, end_pose.RZ_axis
-        grip = self.piper.GetArmGripperMsgs()
+        grip = self.piper.GetArmGripperMsgs().gripper_state.grippers_angle
         return np.array([x, y, z, rx, ry, rz, grip])
     
     def set_eef_states(self, states):
         self.piper.MotionCtrl_2(0x01, 0x00, 100, 0x00)
-        x, y, z, rx, ry, rz, grip = states
+        x, y, z, rx, ry, rz, grip = states[:7]
+        x, y, z, rx, ry, rz, grip = int(x), int(y), int(z), int(rx), int(ry), int(rz), int(grip)
         self.piper.EndPoseCtrl(x, y, z, rx, ry, rz)
         self.piper.GripperCtrl(grip, 1000, 0x01, 0)
     
+    def set_joint_states(self, states):
+        j1, j2, j3, j4, j5, j6 = states[:6]
+        j1, j2, j3, j4, j5, j6 = int(j1), int(j2), int(j3), int(j4), int(j5), int(j6)
+        self.piper.JointCtrl(j1, j2, j3, j4, j5,j6)
+
     def reset(self):
+        # self.piper.MotionCtrl_1(0x01, 0, 0)
         self.set_eef_states(_INIT_STATES)
+        self.set_joint_states(_INIT_JOINT_STATES)
 
 
 class MultiArmPiper(object):
     def __init__(self, 
-                 left_can, 
-                 right_can, 
-                 control_mode='eef_absolute'):
-        self.left_piper = Piper(left_can, control_mode)
-        self.right_piper = Piper(right_can, control_mode)
+                 can_left, 
+                 can_right, 
+                 control_mode='eef_absolute',
+                 use_standardization=True):
+        self.left_piper = Piper(can_left, control_mode, use_standardization)
+        self.right_piper = Piper(can_right, control_mode, use_standardization)
     
     def get_observation(self):
         left_obs = self.left_piper.get_observation()
         right_obs = self.right_piper.get_observation()
-        state = np.concatenate((left_obs['state'], right_obs['state']))
+        states = np.concatenate((left_obs['states'], right_obs['states']))
         return {
-            'state': state,
+            'states': states,
         }
     
     def do_action(self, action):

@@ -109,7 +109,7 @@ def delta_to_absolute_gripper_translation(delta, state, delta_with_grip=False):
     if delta_with_grip:
         grip += state_grip
     
-    return np.concatenate([abs_pos, abs_rot_deg001, [grip]])
+    return np.concatenate([abs_pos, abs_rot_deg001, [grip]]).astype(np.int64)
 
 
 if __name__ == '__main__':

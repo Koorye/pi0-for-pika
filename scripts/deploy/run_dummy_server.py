@@ -6,6 +6,7 @@ import logging
 import socket
 
 from src.deploy.dummy_server import WebsocketDummyServer
+from src.deploy.multi_arm_dummy_server import WebsocketMultiArmDummyServer
 
 
 def main(args):
@@ -13,7 +14,12 @@ def main(args):
     local_ip = socket.gethostbyname(hostname)
     logging.info("Creating server (host: %s, ip: %s)", hostname, local_ip)
 
-    server = WebsocketDummyServer(
+    if args.use_multi_arm:
+        server_cls = WebsocketMultiArmDummyServer
+    else:
+        server_cls = WebsocketDummyServer
+
+    server = server_cls(
         host="0.0.0.0",
         port=args.port,
     )
@@ -27,6 +33,11 @@ if __name__ == "__main__":
         type=int,
         default=8000,
         help="Port to run the server on (default: 8000)",
+    )
+    parser.add_argument(
+        "--use-multi-arm",
+        action="store_true",
+        help="Use the multi-arm dummy server instead of the standard one",
     )
     args = parser.parse_args()
     main(args)

@@ -1,51 +1,35 @@
+import sys
+sys.path.append('.')
+
 import argparse
+import importlib
+import time
 
 from src.deploy.client import Client
-from src.deploy.piper import Piper
 
 
 def main(args):
-    piper = Piper(args.can)
+    config = importlib.import_module('scripts.deploy.' + args.config).DeployConfig()
     client = Client(
-        piper, 
-        host=args.host, 
-        port=args.port, 
-        frequency=args.frequency
+        camera=config.camera_cls(**config.camera_cfg),
+        robot=config.robot_cls(**config.robot_cfg),
+        host=config.host,
+        port=config.port,
+        frequency=config.frequency,
+        prompt=config.robot_cfg.get('prompt', 'do something')  # Default prompt
     )
+
+    time.sleep(10)
+    input('Press Enter to start the client...')
     client.run()
     
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Deploy the OpenPI client.')
     parser.add_argument(
-        '--host', 
+        '--config', 
         type=str, 
-        default='127.0.0.1', 
-        help='Host address of the server.'
-    )
-    parser.add_argument(
-        '--port', 
-        type=int, 
-        default=8000, 
-        help='Port number of the server.'
-    )
-    parser.add_argument(
-        '--frequency', 
-        type=int, 
-        default=10, 
-        help='Frequency of actions in Hz.'
-    )
-    parser.add_argument(
-        '--can', 
-        type=str, 
-        default='can0',
-        help='CAN interface to use.'
-    )
-    parser.add_argument(
-        '--control-mode', 
-        type=str, 
-        default='eef_absolute', 
-        choices=['eef_absolute', 'eef_delta', 'eef_delta_gripper'], 
-        help='Control mode for the Piper.'
+        default='config',
+        help='Path to the configuration file.'
     )
     args = parser.parse_args()
     main(args)

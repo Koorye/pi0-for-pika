@@ -11,7 +11,7 @@ import websockets.frames
 logger = logging.getLogger(__name__)
 
 
-class WebsocketDummyServer:
+class WebsocketMultiArmDummyServer:
     """Serves a policy using the websocket protocol. See websocket_client_policy.py for a client implementation.
 
     Currently only implements the `load` and `infer` methods.
@@ -46,7 +46,8 @@ class WebsocketDummyServer:
 
         await websocket.send(packer.pack({}))
 
-        start_action = [57000, 0, 215000, 0, 85000, 0, 0]
+        start_action = [57000, 0, 215000, 0, 85000, 0, 0,
+                        57000, 0, 215000, 0, 85000, 0, 0]
         flag = True
 
         prev_total_time = None
@@ -60,10 +61,16 @@ class WebsocketDummyServer:
 
                 if flag:
                     start_action[2] += 5000
+                    start_action[9] += 5000
+                    start_action[6] += 5000
+                    start_action[13] += 5000
                     if start_action[2] > 300000:
                         flag = False
                 else:
                     start_action[2] -= 5000
+                    start_action[9] -= 5000
+                    start_action[6] -= 5000
+                    start_action[13] -= 5000
                     if start_action[2] < 215000:
                         flag = True
                 

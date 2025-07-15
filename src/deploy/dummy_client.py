@@ -16,10 +16,14 @@ class DummyClient(object):
         )
         self.frequency = frequency
         
-        self.dummy_observation = {
-            'rgb': np.zeros((480, 640, 3), dtype=np.uint8),
-            'state': np.zeros(7, dtype=np.float32),
-        }
+        self.example_observation = {
+        'left_wrist_base_rgb': np.zeros((480, 640, 3), dtype=np.uint8),
+        'right_wrist_base_rgb': np.zeros((480, 640, 3), dtype=np.uint8),
+        'left_wrist_fisheye_rgb': np.zeros((480, 640, 3), dtype=np.uint8),
+        'right_wrist_fisheye_rgb': np.zeros((480, 640, 3), dtype=np.uint8),
+        'states': np.zeros(7, dtype=np.float32),
+        'prompt': 'do something',
+    }
     
     def run(self):
         while True:
@@ -27,5 +31,5 @@ class DummyClient(object):
             time.sleep(1 / self.frequency)
     
     def do_action(self):
-        action = self.policy.infer(self.dummy_observation)['action']
+        action = self.policy.infer(self.example_observation)['action']
         print(action)
