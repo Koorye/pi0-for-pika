@@ -4,6 +4,7 @@ from dataclasses import dataclass
 @dataclass
 class DataConfig:
     overwrite = True
+    check_only = False
 
     source_data_roots = [
         '/home/shihanwu/Datasets/pika/left',

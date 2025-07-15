@@ -42,6 +42,10 @@ class DummyDataProcessor(object):
         self.create_dataset()
 
     def create_dataset(self):
+        if self.config.check_only:
+            print('Check only mode, skipping dataset creation.')
+            return
+        
         rgb_config = {
             'dtype': 'video',
             'shape': (self.config.image_height, self.config.image_width, 3),
@@ -87,6 +91,11 @@ class DummyDataProcessor(object):
     
     def _add_episode(self, episode_path):
         raw_outputs = self._load_episode(episode_path)
+        
+        if self.config.check_only:
+            print(f'Check only mode, skipping adding episode {episode_path}')
+            return
+
         raw_images = raw_outputs['raw_images']
         raw_actions = raw_outputs['raw_actions']
         instruction = raw_outputs['instruction']
