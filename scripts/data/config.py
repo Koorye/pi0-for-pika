@@ -7,7 +7,7 @@ class DataConfig:
     check_only = False
 
     source_data_roots = [
-        '/home/agilex/Downloads/pika-demo',
+        '/home/shihanwu/Datasets/pika-demo',
     ]
 
     image_height = 480
@@ -57,7 +57,7 @@ class DataConfig:
     instruction_path = 'instructions.json'
     default_instruction = 'do something'
 
-    repo_id = 'Koorye/pika'
+    repo_id = 'Koorye/pika-demo'
     # data_root = 'data/'
     data_root = None
     fps = 30
