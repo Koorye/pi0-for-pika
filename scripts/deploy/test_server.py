@@ -22,8 +22,9 @@ def main(args):
 
     start_time = time.time()
     for i in range(100):
-        action = policy.infer(example_observation)['action']
-        print(f"Action {i}: {action}")
+        actions_list = policy.infer(example_observation)['actions']
+        for actions in actions_list:
+            print(f"{actions}")
     end_time = time.time()
 
     print(f"Time taken for 100 inferences: {end_time - start_time:.2f} seconds")

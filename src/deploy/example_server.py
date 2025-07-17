@@ -11,12 +11,12 @@ import websockets.frames
 
 from .standardlization import get_standardization
 
-input_transform = get_standardization('piper')['input']
+input_trans = get_standardization('piper')['input']
 
 logger = logging.getLogger(__name__)
 
 
-class WebsocketMultiArmDummyServer:
+class WebsocketExampleServer:
     """Serves a policy using the websocket protocol. See websocket_client_policy.py for a client implementation.
 
     Currently only implements the `load` and `infer` methods.
@@ -26,9 +26,11 @@ class WebsocketMultiArmDummyServer:
         self,
         host: str = "0.0.0.0",
         port: int | None = None,
+        example_path: str = 'examples/example_actions.npy',
     ) -> None:
         self._host = host
         self._port = port
+        self.example_actions_list = np.load(example_path, allow_pickle=True, fix_imports=True)
         logging.getLogger("websockets.server").setLevel(logging.INFO)
 
     def serve_forever(self) -> None:
@@ -51,8 +53,7 @@ class WebsocketMultiArmDummyServer:
 
         await websocket.send(packer.pack({}))
 
-        flag = True
-        count = 0
+        i = 0
         prev_total_time = None
         while True:
             try:
@@ -61,22 +62,15 @@ class WebsocketMultiArmDummyServer:
 
                 infer_time = time.monotonic()
                 # action = self._policy.infer(obs)
-
-                count += 1
-                if flag:
-                    action = [0, 0, 1000, 0, 0, 0, 0]
-                    if count == 100:
-                        flag = False
-                        count = 0   
-                else:
-                    action = [0, 0, -1000, 0, 0, 0, 0]
-                    if count == 100:
-                        flag = True
-                        count = 0
-                
-                action = input_transform(action)
+                actions = self.example_actions_list[i % len(self.example_actions_list)]
+                # actions[3] = 0
+                # actions[4] = 0
+                # actions[5] = 0
+                # actions = input_trans([100, 0, 0, 0, 10000, 10000, 0])
+                # actions = input_trans([0, 5000, 0, 0, 0, -1000, 0])
+                i += 1
                 action = {
-                    "actions": [np.concatenate([action, action])],
+                    "actions": [actions],
                 }
 
                 infer_time = time.monotonic() - infer_time

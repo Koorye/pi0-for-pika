@@ -1,7 +1,7 @@
-from pika import sense
+import numpy as np
 
 
-class Pika(object):
+class DummyCamera(object):
     def __init__(self, 
                  usb,
                  fisheye_camera_index=None,
@@ -13,61 +13,29 @@ class Pika(object):
                  use_realsense=True,
                  use_realsense_depth=False,
                  prefix='left_wrist'):
+        self.width = width
+        self.height = height
         self.use_fisheye = use_fisheye
         self.use_realsense = use_realsense
         self.use_realsense_depth = use_realsense_depth
         self.prefix = prefix
 
-        _sense = sense(usb)
-    
-        if not _sense.connect():
-            print("Pika Sense connect failed")
-            return
-    
-        _sense.set_camera_param(width, height, fps)
-
-        if use_fisheye:
-            if fisheye_camera_index is None:
-                raise ValueError("Fisheye camera index must be provided")
-            _sense.set_fisheye_camera_index(fisheye_camera_index)
-            self.fisheye_camera = _sense.get_fisheye_camera()
-        
-        if use_realsense:
-            _sense.set_realsense_serial_number(realsense_serial_number)
-            if realsense_serial_number is None:
-                raise ValueError("Realsense serial number must be provided")
-            self.realsense_camera = _sense.get_realsense_camera()
-    
     def get_observation(self):
         outputs = {}
 
         if self.use_fisheye:
-            success, frame = self.fisheye_camera.get_frame()
-            frame = frame[:, :, ::-1]  # Convert BGR to RGB
-            if not success:
-                print("Failed to get fisheye frame")
-                return None
-            outputs[f'{self.prefix}_fisheye_rgb'] = frame
+            outputs[f'{self.prefix}_fisheye_rgb'] = np.random.randint(0, 255, (self.height, self.width, 3), dtype=np.uint8)
         
         if self.use_realsense:
-            success, color_frame = self.realsense_camera.get_color_frame()
-            color_frame = color_frame[:, :, ::-1]  # Convert BGR to RGB
-            if not success:
-                print("Failed to get realsense frame")
-                return None
-            outputs[f'{self.prefix}_base_rgb'] = color_frame
+            outputs[f'{self.prefix}_base_rgb'] = np.random.randint(0, 255, (self.height, self.width, 3), dtype=np.uint8)
         
         if self.use_realsense_depth:
-            success, depth_frame = self.realsense_camera.get_depth_frame()
-            if not success:
-                print("Failed to get realsense depth frame")
-                return None
-            outputs[f'{self.prefix}_base_depth'] = depth_frame
+            outputs[f'{self.prefix}_base_depth'] = np.random.randint(0, 2 ** 16, (self.height, self.width), dtype=np.uint16)
         
         return outputs
 
 
-class MultiPika(object):
+class MultiDummyCamera(object):
     def __init__(self, 
                  usb_left, 
                  usb_right, 
@@ -81,7 +49,7 @@ class MultiPika(object):
                  use_fisheye=True,
                  use_realsense=True,
                  use_realsense_depth=False):
-        self.left_pika = Pika(
+        self.left_dummy_camera = DummyCamera(
             usb_left, 
             fisheye_camera_index=fisheye_camera_index_left, 
             realsense_serial_number=realsense_serial_number_left,
@@ -93,7 +61,7 @@ class MultiPika(object):
             use_realsense_depth=use_realsense_depth,
             prefix='left_wrist'
         )
-        self.right_pika = Pika(
+        self.right_dummy_camera = DummyCamera(
             usb_right, 
             fisheye_camera_index=fisheye_camera_index_right, 
             realsense_serial_number=realsense_serial_number_right,
@@ -107,6 +75,6 @@ class MultiPika(object):
         )
     
     def get_observation(self):
-        left_obs = self.left_pika.get_observation()
-        right_obs = self.right_pika.get_observation()
+        left_obs = self.left_dummy_camera.get_observation()
+        right_obs = self.right_dummy_camera.get_observation()
         return {**left_obs, **right_obs}

@@ -7,8 +7,7 @@ class DataConfig:
     check_only = False
 
     source_data_roots = [
-        '/home/shihanwu/Datasets/pika/left',
-        '/home/shihanwu/Datasets/pika/right',
+        '/home/agilex/Downloads/pika-demo',
     ]
 
     image_height = 480
@@ -56,7 +55,7 @@ class DataConfig:
     nonoop_threshold = 1e-3
 
     instruction_path = 'instructions.json'
-    default_instruction = 'put the banana in the basket'
+    default_instruction = 'do something'
 
     repo_id = 'Koorye/pika'
     # data_root = 'data/'

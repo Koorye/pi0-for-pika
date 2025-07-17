@@ -19,7 +19,7 @@ def main(args):
         prompt=config.robot_cfg.get('prompt', 'do something')  # Default prompt
     )
 
-    time.sleep(10)
+    time.sleep(3)
     input('Press Enter to start the client...')
     client.run()
     

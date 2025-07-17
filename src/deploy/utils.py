@@ -67,7 +67,9 @@ def delta_to_absolute_gripper_translation(delta, state, delta_with_grip=False):
     # Convert angles from 0.001 degrees to radians
     state_rot_rad = np.array([deg001_to_rad(a) for a in state_rot])
     delta_rot_rad = np.array([deg001_to_rad(a) for a in delta_rot])
-    state_rot_rad[1] -= math.pi / 2  # Adjust for coordinate system difference
+    # state_rot_rad[0] -= math.pi
+    # state_rot_rad[1] -= math.pi / 2  # Adjust for coordinate system difference
+    # state_rot_rad[2] -= math.pi
     
     # Get rotation matrix for state (world to gripper frame)
     R_state = euler_to_rotation_matrix(*state_rot_rad)
@@ -75,12 +77,16 @@ def delta_to_absolute_gripper_translation(delta, state, delta_with_grip=False):
     # Transform delta position from gripper frame to world frame
     # Note: Rotation matrix transforms vectors from gripper frame to world frame
     delta_pos_world = R_state @ delta_pos
-    
+    # delta_pos_world[0] = -delta_pos_world[0]
+    # delta_pos_world[2] = -delta_pos_world[2]
+
     # Calculate absolute position
     abs_pos = state_pos + delta_pos_world
     
     # Calculate absolute rotation
     # Get rotation matrix for delta (gripper frame)
+    # delta_rot_rad[0] = -delta_rot_rad[0]  # Adjust for coordinate system difference
+    # delta_rot_rad[2] = -delta_rot_rad[2]
     R_delta = euler_to_rotation_matrix(*delta_rot_rad)
     
     # Combined rotation: R_total = R_state * R_delta
@@ -101,7 +107,9 @@ def delta_to_absolute_gripper_translation(delta, state, delta_with_grip=False):
         rz = 0
     
     # Convert back to 0.001 degrees
-    ry += math.pi / 2  # Adjust for the coordinate system difference
+    # rx += math.pi
+    # ry += math.pi / 2  # Adjust for the coordinate system difference
+    # rz += math.pi
     abs_rot = np.array([rx, ry, rz])
     abs_rot_deg001 = np.array([rad_to_deg001(a) for a in abs_rot])
     
@@ -116,8 +124,8 @@ if __name__ == '__main__':
     import matplotlib.pyplot as plt
     
                      #    x     y      z    rx     ry     rz   grip
-    state = np.array([50000,    0, 50000,    0, 90000,     0, 60000])
-    delta = np.array([100,    0,     0,    0, 10000, 10000, 60000])
+    state = np.array([50000,    0, 50000,      0,     0,      0, 60000])
+    delta = np.array([  100,    0,     0,      0,  1000,      0, 60000])
     
     states = [state.copy()]
     for _ in range(100):

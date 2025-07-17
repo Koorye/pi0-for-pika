@@ -68,7 +68,7 @@ class WebsocketDummyServer:
                         flag = True
                 
                 action = {
-                    "action": start_action,
+                    "actions": [start_action],
                 }
 
                 infer_time = time.monotonic() - infer_time

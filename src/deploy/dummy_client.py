@@ -23,11 +23,14 @@ class DummyClient(object):
         'right_wrist_fisheye_rgb': np.zeros((480, 640, 3), dtype=np.uint8),
         'states': np.zeros(7, dtype=np.float32),
         'prompt': 'do something',
-    }
+
+        }
+        self.count = 0
     
     def run(self):
         while True:
             self.do_action()
+            self.count += 1
             time.sleep(1 / self.frequency)
     
     def do_action(self):
