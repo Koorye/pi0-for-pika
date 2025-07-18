@@ -21,14 +21,14 @@ def main(args):
     )
 
     start_time = time.time()
-    for i in range(100):
+    for i in range(10):
         actions_list = policy.infer(example_observation)['actions']
         for actions in actions_list:
             print(f"{actions}")
     end_time = time.time()
 
-    print(f"Time taken for 100 inferences: {end_time - start_time:.2f} seconds")
-    print(f"Average time per inference: {(end_time - start_time) / 100:.4f} seconds")
+    print(f"Time taken for 10 inferences: {end_time - start_time:.2f} seconds")
+    print(f"Average time per inference: {(end_time - start_time) / 10:.4f} seconds")
 
 
 if __name__ == "__main__":

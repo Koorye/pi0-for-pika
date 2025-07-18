@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-class MultiArmDummyRobot(object):
+class MultiRobots(object):
     def __init__(
         self, 
         left_robot,

@@ -11,8 +11,8 @@ from src.deploy.client import Client
 def main(args):
     config = importlib.import_module('scripts.deploy.' + args.config).DeployConfig()
     client = Client(
-        camera=config.camera_cls(**config.camera_cfg),
-        robot=config.robot_cls(**config.robot_cfg),
+        camera=config.camera,
+        robot=config.robot,
         host=config.host,
         port=config.port,
         frequency=config.frequency,

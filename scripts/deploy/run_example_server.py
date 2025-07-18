@@ -5,7 +5,7 @@ import argparse
 import logging
 import socket
 
-from src.deploy.example_server import WebsocketExampleServer
+from src.deploy.servers.example_server import WebsocketExampleServer
 
 
 def main(args):
