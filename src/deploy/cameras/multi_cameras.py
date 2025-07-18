@@ -1,4 +1,4 @@
-class MultiCamera(object):
+class MultiCameras(object):
     def __init__(
             self, 
             left_camera,
