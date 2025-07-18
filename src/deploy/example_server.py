@@ -9,7 +9,7 @@ from openpi_client import msgpack_numpy
 import websockets.asyncio.server as _server
 import websockets.frames
 
-from .standardlization import get_standardization
+from .standardlizations import get_standardization
 
 input_trans = get_standardization('piper')['input']
 

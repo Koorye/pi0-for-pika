@@ -16,6 +16,9 @@ pip install -e .
 cd ../piper_sdk
 pip install -e .
 
+cd ../pika_sdk
+pip install https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-22.04/wxpython-4.2.3-cp311-cp311-linux_x86_64.whl
+pip install -e .
 cd ../..
 
 cd src/training/openpi
