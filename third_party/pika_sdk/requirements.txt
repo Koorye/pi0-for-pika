@@ -1,0 +1,6 @@
+pyserial
+numpy
+opencv-python
+pyrealsense2
+Gooey
+
