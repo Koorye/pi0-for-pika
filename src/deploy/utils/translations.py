@@ -14,7 +14,7 @@ def rad_to_deg(rad):
 
 def deg001_to_deg(deg001):
     """Convert 0.001 degrees to degrees"""
-    return deg001 / 1000
+    return deg001 / 1000.0
 
 
 def deg_to_deg001(deg):

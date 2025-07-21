@@ -21,9 +21,6 @@ def piper_to_pika(states):
         states[0] * 1e-6,  # x in meters
         states[1] * 1e-6,  # y in meters
         states[2] * 1e-6,  # z in meters
-        # deg001_to_rad(states[3]),  # rx in radians
-        # deg001_to_rad(states[4]),  # ry in radians
-        # deg001_to_rad(states[5]),  # rz in radians
         deg_to_rad(deg001_to_deg(states[3])),  # rx in radians
         deg_to_rad(deg001_to_deg(states[4])),  # ry in radians
         deg_to_rad(deg001_to_deg(states[5])),  # rz in radians
@@ -49,9 +46,6 @@ def pika_to_piper(states):
         int(states[0] * 1e6),  # x in 0.001mm
         int(states[1] * 1e6),  # y in 0.001mm
         int(states[2] * 1e6),  # z in 0.001mm
-        # int(rad_to_deg001(states[3])),  # rx in 0.001 degree
-        # int(rad_to_deg001(states[4])),  # ry in 0.001 degree
-        # int(rad_to_deg001(states[5])),  # rz in 0.001 degree
         int(deg_to_deg001(rad_to_deg(states[3]))),  # rx in 0.001 degree
         int(deg_to_deg001(rad_to_deg(states[4]))),  # ry in 0.001 degree
         int(deg_to_deg001(rad_to_deg(states[5]))),  # rz in 0.001 degree
