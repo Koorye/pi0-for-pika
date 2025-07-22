@@ -1,3 +1,4 @@
+import math
 from dataclasses import dataclass
 
 
@@ -7,7 +8,7 @@ class DataConfig:
     check_only = False
 
     source_data_roots = [
-        '/home/shihanwu/Datasets/pika-demo',
+        'examples/pika_example_data',
     ]
 
     image_height = 480
@@ -20,11 +21,11 @@ class DataConfig:
         'camera/color/pikaFisheyeCamera_r',
     ]
     rgb_names = [
-        'third_base_rgb',
-        'left_wrist_base_rgb',
-        'left_wrist_fisheye_rgb',
-        'right_wrist_base_rgb',
-        'right_wrist_fisheye_rgb',
+        'observation.images.cam_third',
+        'observation.images.cam_left_wrist',
+        'observation.images.cam_left_wrist_fisheye',
+        'observation.images.cam_right_wrist',
+        'observation.images.cam_right_wrist_fisheye',
     ]
 
     use_depth = True
@@ -34,12 +35,12 @@ class DataConfig:
         'camera/depth/pikaDepthCamera_r',
     ]
     depth_names = [
-        'third_base_depth',
-        'left_wrist_base_depth',
-        'right_wrist_base_depth',
+        'observation.depths.cam_third',
+        'observation.depths.cam_left_wrist',
+        'observation.depths.cam_right_wrist',
     ]
 
-    action_len = 14
+    action_name = 'action'
     action_dirs = [
         'localization/pose/pika_l',
         'gripper/encoder/pika_l',
@@ -52,13 +53,18 @@ class DataConfig:
         ['x', 'y', 'z', 'roll', 'pitch', 'yaw'],
         ['angle'],
     ]
-    nonoop_threshold = 1e-3
+    position_nonoop_threshold = 1e-2 # 1cm
+    rotation_nonoop_threshold = math.pi / 180 # 1 degree
+    use_delta = True
+
+    use_state = True
+    state_name = 'observation.state'
 
     instruction_path = 'instructions.json'
     default_instruction = 'do something'
 
-    repo_id = 'Koorye/pika-demo'
+    repo_id = 'Koorye/pika-example'
     # data_root = 'data/'
     data_root = None
-    fps = 30
+    fps = 10
     video_backend = 'pyav'

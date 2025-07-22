@@ -28,10 +28,13 @@ class PikaDataProcessor(DummyDataProcessor):
         raw_images = defaultdict(list)
         for rgb_dir, rgb_name in zip(self.config.rgb_dirs, self.config.rgb_names):
             rgb_dir = os.path.join(episode_path, rgb_dir)
-            # filenames = os.listdir(rgb_dir)
-            # filenames = [filename for filename in filenames if filename.endswith('.jpg') or filename.endswith('.png')]
-            # filenames.sort(key=lambda x: float(x[:-4]))
-            filenames = load_sync(os.path.join(rgb_dir, 'sync.txt'))
+            
+            if os.path.exists(os.path.join(rgb_dir, 'sync.txt')):
+                filenames = load_sync(os.path.join(rgb_dir, 'sync.txt'))
+            else:
+                filenames = os.listdir(rgb_dir)
+                filenames = [filename for filename in filenames if filename.endswith('.jpg') or filename.endswith('.png')]
+                filenames.sort(key=lambda x: float(x[:-4]))
 
             for filename in filenames:
                 image_path = os.path.join(rgb_dir, filename)
@@ -40,10 +43,13 @@ class PikaDataProcessor(DummyDataProcessor):
         raw_actions = defaultdict(list)
         for action_dir, action_keys in zip(self.config.action_dirs, self.config.action_keys_list):
             action_dir_ = os.path.join(episode_path, action_dir)
-            # filenames = os.listdir(action_dir_)
-            # filenames = [filename for filename in filenames if filename.endswith('.json')]
-            # filenames.sort(key=lambda x: float(x[:-5]))
-            filenames = load_sync(os.path.join(action_dir_, 'sync.txt'))
+
+            if os.path.exists(os.path.join(action_dir_, 'sync.txt')):
+                filenames = load_sync(os.path.join(action_dir_, 'sync.txt'))
+            else:
+                filenames = os.listdir(action_dir_)
+                filenames = [filename for filename in filenames if filename.endswith('.json')]
+                filenames.sort(key=lambda x: float(x[:-5]))
 
             for filename in filenames:
                 action_path = os.path.join(action_dir_, filename)
@@ -70,10 +76,13 @@ class PikaDataProcessor(DummyDataProcessor):
             raw_depths = defaultdict(list)
             for depth_dir, depth_name in zip(self.config.depth_dirs, self.config.depth_names):
                 depth_dir = os.path.join(episode_path, depth_dir)
-                # filenames = os.listdir(depth_dir)
-                # filenames = [filename for filename in filenames if filename.endswith('.png') or filename.endswith('.jpg')]
-                # filenames.sort(key=lambda x: float(x[:-4]))
-                filenames = load_sync(os.path.join(depth_dir, 'sync.txt'))
+
+                if os.path.exists(os.path.join(depth_dir, 'sync.txt')):
+                    filenames = load_sync(os.path.join(depth_dir, 'sync.txt'))
+                else:
+                    filenames = os.listdir(depth_dir)
+                    filenames = [filename for filename in filenames if filename.endswith('.png') or filename.endswith('.jpg')]
+                    filenames.sort(key=lambda x: float(x[:-4]))
                 
                 for filename in filenames:
                     depth_path = os.path.join(depth_dir, filename)
@@ -92,7 +101,3 @@ class PikaDataProcessor(DummyDataProcessor):
         assert all(lens[0] == l for l in lens), "All lists must have the same length"
         
         return outputs
-    
-    def _check_nonoop_actions(self, states, actions):
-        return np.abs(states - actions).max() > self.config.nonoop_threshold
-    

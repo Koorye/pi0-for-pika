@@ -1,3 +1,4 @@
+import itertools
 import os
 import numpy as np
 import shutil
@@ -13,7 +14,13 @@ except:
     from lerobot.common.datasets.lerobot_dataset import LeRobotDataset
     _LEROBOT_VERSION = '2.0'
 
-from .utils import get_lerobot_default_root, load_image
+from ..utils.data_tools import eef_states_to_pos_rot_grip, pos_rot_grip_to_eef_states
+from ..utils.image_tools import load_image
+from ..utils.transforms import compute_relative_pose, robust_compute_relative_pose
+
+
+def get_lerobot_default_root():
+    return os.path.expanduser('~/.cache/huggingface/lerobot')
 
 
 class DummyDataProcessor(object):
@@ -49,19 +56,23 @@ class DummyDataProcessor(object):
         rgb_config = {
             'dtype': 'video',
             'shape': (self.config.image_height, self.config.image_width, 3),
-            'name': ['height', 'width', 'channels'],
+            'names': ['height', 'width', 'channels'],
         }
         features = {rgb_name: rgb_config for rgb_name in self.config.rgb_names}
-        features['states'] = {
+        action_len = sum(len(keys) for keys in self.config.action_keys_list)
+        action_keys_flatten = list(itertools.chain.from_iterable(self.config.action_keys_list))
+        features[self.config.action_name] = {
             'dtype': 'float64',
-            'shape': (self.config.action_len,),
-            'name': ['states'],
+            'shape': (action_len,),
+            'names': action_keys_flatten,
         }
-        features['actions'] = {
-            'dtype': 'float64',
-            'shape': (self.config.action_len,),
-            'name': ['actions'],
-        }
+
+        if self.config.use_state:
+            features[self.config.state_name] = {
+                'dtype': 'float64',
+                'shape': (action_len,),
+                'names': action_keys_flatten,
+            }
 
         if self.config.use_depth:
             depth_config = {
@@ -108,11 +119,26 @@ class DummyDataProcessor(object):
             states = np.concatenate([raw_actions[action_dir][i] for action_dir in self.config.action_dirs])
             actions = np.concatenate([raw_actions[action_dir][i + 1] for action_dir in self.config.action_dirs])
             if not self._check_nonoop_actions(states, actions):
+                print(f'Skipping frame {i} due to non-noop actions.')
                 continue
 
+            if self.config.use_delta:
+                pos_rot_grips = eef_states_to_pos_rot_grip(states)
+                next_pos_rot_grips = eef_states_to_pos_rot_grip(actions)
+                
+                pos_rot_grip_deltas = []
+                for pos_rot_grip, next_pos_rot_grip in zip(pos_rot_grips, next_pos_rot_grips):
+                    pos_delta, rot_delta = compute_relative_pose(pos_rot_grip[0], pos_rot_grip[1], 
+                                                                 next_pos_rot_grip[0], next_pos_rot_grip[1])
+                    pos_rot_grip_deltas.append((pos_delta, rot_delta, next_pos_rot_grip[2]))
+                actions = pos_rot_grip_to_eef_states(pos_rot_grip_deltas)
+
             frame = {rgb_name: load_image(raw_images[rgb_name][i]) for rgb_name in self.config.rgb_names}
-            frame['states'] = states
-            frame['actions'] = actions
+            frame[self.config.action_name] = actions
+
+            if self.config.use_state:
+                frame[self.config.state_name] = states
+
             if self.config.use_depth:
                 frame.update({depth_name: load_image(raw_depths[depth_name][i]) 
                               for depth_name in self.config.depth_names})
@@ -132,7 +158,7 @@ class DummyDataProcessor(object):
             raise ValueError(f'Unsupported LeRobot version: {_LEROBOT_VERSION}')
         
     def _load_episode(self, episode_path):
-        num_frames_per_episode = 10
+        num_frames_per_episode = 100
 
         raw_images = defaultdict(list)
         raw_actions = defaultdict(list)
@@ -147,8 +173,33 @@ class DummyDataProcessor(object):
                 action_data = np.random.rand(len(action_keys))
                 raw_actions[action_dir].append(action_data)
         
-        return raw_images, raw_actions, instruction
+        outputs = {
+            'raw_images': raw_images,
+            'raw_actions': raw_actions,
+            'instruction': instruction
+        }
+
+        if self.config.use_depth:
+            raw_depths = defaultdict(list)
+            for frame_idx in range(num_frames_per_episode):
+                for depth_name in self.config.depth_names:
+                    depth_image = np.random.randint(0, 65535, (self.config.image_height, self.config.image_width), dtype=np.uint16)
+                    raw_depths[depth_name].append(depth_image)
+            outputs['raw_depths'] = raw_depths
+        
+        return outputs
     
     def _check_nonoop_actions(self, states, actions):
-        return np.abs(states - actions).max() > self.config.nonoop_threshold
-
+        states = eef_states_to_pos_rot_grip(states)
+        actions = eef_states_to_pos_rot_grip(actions)
+        
+        for state, action in zip(states, actions):
+            position_diff = np.linalg.norm(np.array(state[0]) - np.array(action[0]))
+            rotation_diff = np.linalg.norm(np.array(state[1]) - np.array(action[1]))
+            if (
+                position_diff > self.config.position_nonoop_threshold or
+                rotation_diff > self.config.rotation_nonoop_threshold
+            ):
+                return True
+        
+        return False
