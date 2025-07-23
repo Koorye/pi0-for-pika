@@ -389,10 +389,10 @@ class LeRobotPikaDataConfig(DataConfigFactory):
             inputs=[
                 _transforms.RepackTransform(
                     {
-                        "left_wrist_fisheye_rgb": "left_wrist_fisheye_rgb",
-                        "right_wrist_fisheye_rgb": "right_wrist_fisheye_rgb",
-                        "states": "states",
-                        "actions": "actions",
+                        "observation.images.cam_left_wrist_fisheye": "observation.images.cam_left_wrist_fisheye",
+                        "observation.images.cam_right_wrist_fisheye": "observation.images.cam_right_wrist_fisheye",
+                        "observation.state": "observation.state",
+                        "action": "action",
                         "prompt": "prompt",
                     }
                 )
@@ -405,11 +405,10 @@ class LeRobotPikaDataConfig(DataConfigFactory):
         )
 
         delta_action_mask = _transforms.make_bool_mask(6, -1, 6, -1)
-        data_transforms = data_transforms.push(
-            inputs=[_transforms.DeltaActions(delta_action_mask)],
-            # outputs=[_transforms.AbsoluteActions(delta_action_mask)],
-            outputs=[], # for outputs, the actions will be converted to absolute actions in the client
-        )
+        # data_transforms = data_transforms.push(
+        #     inputs=[_transforms.DeltaActions(delta_action_mask)],
+        #     outputs=[_transforms.AbsoluteActions(delta_action_mask)],
+        # )
 
         model_transforms = ModelTransformFactory()(model_config)
 

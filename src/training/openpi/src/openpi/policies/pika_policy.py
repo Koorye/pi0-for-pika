@@ -7,13 +7,6 @@ from openpi import transforms
 from openpi.models import model as _model
 
 
-def make_pika_example() -> dict:
-    return {
-        "left_wrist_fisheye_rgb": np.random.randint(256, size=(3, 480, 640), dtype=np.uint8),
-        "right_wrist_fisheye_rgb": np.random.randint(256, size=(3, 480, 640), dtype=np.uint8),
-    }
-
-
 def _parse_image(image) -> np.ndarray:
     image = np.asarray(image)
     if np.issubdtype(image.dtype, np.floating):
@@ -29,11 +22,11 @@ class PikaInputs(transforms.DataTransformFn):
     model_type: _model.ModelType = _model.ModelType.PI0
 
     def __call__(self, data: dict) -> dict:
-        state = data['states']
+        state = data['state']
         state = transforms.pad_to_dim(state, self.action_dim)
 
-        left_wrist_image = _parse_image(data["left_wrist_fisheye_rgb"])
-        right_wrist_image = _parse_image(data["right_wrist_fisheye_rgb"])
+        left_wrist_image = _parse_image(data["observation.images.cam_left_wrist_fisheye"])
+        right_wrist_image = _parse_image(data["observation.images.cam_right_wrist_fisheye"])
 
         match self.model_type:
             case _model.ModelType.PI0:
@@ -41,7 +34,7 @@ class PikaInputs(transforms.DataTransformFn):
                 images = (np.zeros_like(left_wrist_image), left_wrist_image, right_wrist_image)
                 image_masks = (np.False_, np.True_, np.True_)
             case _model.ModelType.PI0_FAST:
-                names = ("base_0_rgb", "base_1_rgb", "wrist_0_rgb")
+                names = ("base_0_rgb", "left_wrist_0_rgb", "right_wrist_0_rgb")
                 # We don't mask out padding images for FAST models.
                 images = (np.zeros_like(left_wrist_image), left_wrist_image, right_wrist_image)
                 image_masks = (np.True_, np.True_, np.True_)
@@ -54,12 +47,10 @@ class PikaInputs(transforms.DataTransformFn):
             "image_mask": dict(zip(names, image_masks, strict=True)),
         }
 
-        if 'actions' in data:
+        if "actions" in data:
             actions = data["actions"]
             inputs["actions"] = transforms.pad_to_dim(actions, self.action_dim)
 
-        if isinstance(data["prompt"], bytes):
-            data["prompt"] = data["prompt"].decode("utf-8")
         inputs["prompt"] = data["prompt"]
 
         return inputs
