@@ -8,7 +8,8 @@ class DataConfig:
     check_only = False
 
     source_data_roots = [
-        'examples/pika_example_data',
+        # 'examples/pika_example_data',
+        '/home/shihanwu/Datasets/pika-demo',
     ]
 
     image_height = 480
@@ -63,8 +64,7 @@ class DataConfig:
     instruction_path = 'instructions.json'
     default_instruction = 'do something'
 
-    repo_id = 'Koorye/pika-example'
-    # data_root = 'data/'
+    repo_id = 'Koorye/pika-demo'
     data_root = None
     fps = 10
     video_backend = 'pyav'

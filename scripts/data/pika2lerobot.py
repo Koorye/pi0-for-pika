@@ -8,7 +8,7 @@ from src.data.pika_data_processor import PikaDataProcessor
 
 
 def main(args):
-    config = importlib.import_module('scripts.data.' + args.config).DataConfig()
+    config = importlib.import_module('scripts.data.configs.' + args.config).DataConfig()
     processor = PikaDataProcessor(config)
     processor.process_data()
 
@@ -18,7 +18,6 @@ if __name__ == "__main__":
     parser.add_argument(
         "--config",
         type=str,
-        default="config",
         help="Path to the configuration module.",
     )
     args = parser.parse_args()

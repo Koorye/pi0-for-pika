@@ -410,7 +410,7 @@ class ACT(nn.Module):
             latent dimension.
         """
         if self.config.use_vae and self.training:
-            assert "action" in batch, (
+            assert "action" in batch or "actions" in batch, (
                 "actions must be provided when using the variational objective in training mode."
             )
 
@@ -420,7 +420,7 @@ class ACT(nn.Module):
             batch_size = batch["observation.environment_state"].shape[0]
 
         # Prepare the latent for input to the transformer encoder.
-        if self.config.use_vae and "action" in batch:
+        if self.config.use_vae and ("action" in batch or "actions" in batch):
             # Prepare the input to the VAE encoder: [cls, *joint_space_configuration, *action_sequence].
             cls_embed = einops.repeat(
                 self.vae_encoder_cls_embed.weight, "1 d -> b 1 d", b=batch_size
@@ -428,7 +428,8 @@ class ACT(nn.Module):
             if self.config.robot_state_feature:
                 robot_state_embed = self.vae_encoder_robot_state_input_proj(batch["observation.state"])
                 robot_state_embed = robot_state_embed.unsqueeze(1)  # (B, 1, D)
-            action_embed = self.vae_encoder_action_input_proj(batch["action"])  # (B, S, D)
+            action_key = "action" if "action" in batch else "actions"
+            action_embed = self.vae_encoder_action_input_proj(batch[action_key])  # (B, S, D)
 
             if self.config.robot_state_feature:
                 vae_encoder_input = [cls_embed, robot_state_embed, action_embed]  # (B, S+2, D)

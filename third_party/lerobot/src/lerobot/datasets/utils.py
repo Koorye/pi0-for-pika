@@ -460,7 +460,10 @@ def dataset_to_policy_features(features: dict[str, dict]) -> dict[str, PolicyFea
             if len(shape) != 3:
                 raise ValueError(f"Number of dimensions of {key} != 3 (shape={shape})")
 
-            names = ft["names"]
+            try:
+                names = ft["names"]
+            except:
+                names = ft["name"]
             # Backward compatibility for "channel" which is an error introduced in LeRobotDataset v2.0 for ported datasets.
             if names[2] in ["channel", "channels"]:  # (h, w, c) -> (c, h, w)
                 shape = (shape[2], shape[0], shape[1])

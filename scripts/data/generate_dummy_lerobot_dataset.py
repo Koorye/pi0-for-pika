@@ -8,7 +8,7 @@ from src.data.dummy_data_processor import DummyDataProcessor
 
 
 def main(args):
-    config = importlib.import_module('scripts.data.' + args.config).DataConfig()
+    config = importlib.import_module('scripts.data.configs.' + args.config).DataConfig()
     processor = DummyDataProcessor(config)
     processor.process_data()
 
@@ -18,7 +18,6 @@ if __name__ == "__main__":
     parser.add_argument(
         "--config",
         type=str,
-        default="config",
         help="Path to the configuration module.",
     )
     args = parser.parse_args()
